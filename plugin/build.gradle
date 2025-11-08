@@ -1,0 +1,76 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'checkstyle'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Selenium
+    implementation 'org.seleniumhq.selenium:selenium-java:4.21.0'
+    implementation 'org.seleniumhq.selenium:selenium-devtools-v125:4.21.0'
+
+    // TestNG
+    testImplementation 'org.testng:testng:7.10.2'
+
+    // Log4j2
+    implementation 'org.apache.logging.log4j:log4j-api:2.21.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.21.0'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.21.0'
+}
+
+application {
+    mainClass = 'demo.App'
+}
+
+checkstyle {
+    toolVersion = '8.45'
+    config = rootProject.resources.text.fromFile('__CRIO__/checkstyle.xml')
+    sourceSets = [sourceSets.main, sourceSets.test]
+    ignoreFailures = true
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = true
+        xml.outputLocation = file("build/reports/checkstyle/test.xml")
+        html.required = false
+    }
+}
+
+test {
+    useTestNG() {
+        useDefaultListeners = true
+        suites "src/test/resources/testng.xml"
+    }
+
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            println "\nTEST RESULT: ${result.resultType}"
+            println "TEST SUMMARY: RAN ${result.testCount} TESTS, " +
+                    "${result.successfulTestCount} SUCCEEDED, " +
+                    "${result.failedTestCount} FAILED, " +
+                    "${result.skippedTestCount} SKIPPED"
+        }
+    }
+
+    testLogging {
+        events "PASSED", "SKIPPED", "FAILED", "STANDARD_OUT", "STANDARD_ERROR"
+        exceptionFormat = 'full'
+        showStackTraces = true
+        showStandardStreams = true
+    }
+
+    outputs.upToDateWhen { false }
+    dependsOn assemble
+    mustRunAfter clean
+}
+tasks.withType(Checkstyle).configureEach {
+    enabled = false
+}
