@@ -1,197 +1,212 @@
 package demo;
 
 import java.time.Duration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.List;
+
 import org.openqa.selenium.By;
-import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.testng.Assert;
+
 import demo.wrappers.Wrappers;
+
 public class TestCases {
-    private static final Logger log = Logger.getLogger(TestCases.class.getName());
+
     ChromeDriver driver;
     Wrappers wrapper;
     WebDriverWait wait;
 
-
-     @Test(priority = 2)
+    @Test(priority = 2)
     public void uiValidation() throws InterruptedException {
         try {
-        log.info("Test case start: TestCase01");
-        System.out.println("Test case start : TestCase01");
-        driver.get("https://ernx-consumer.vercel.app/login"); // Navigates to the website.
-        Thread.sleep(5000);
-        String pageTitle = driver.getTitle();
-        log.info("Page Title is: " + pageTitle);
-        Assert.assertEquals(pageTitle, "ERNX - Parents"); // Basic UI validation: checking
+            System.out.println("Test case start: TestCase01");
+            driver.get("https://ernx-consumer.vercel.app/login");
+            Thread.sleep(4000);
 
-        WebElement emailField = wait.until(ExpectedConditions.elementToBeClickable(By.name("email")));
-        Assert.assertTrue(emailField.isDisplayed()); // Basic UI validation: element presence
-        wrapper.enterText(emailField, "nsmdina@gmail.com"); // Interaction: filling out email field
-        log.info("Email entered successfully.");
+            String pageTitle = driver.getTitle(); // Get the page title to verify navigation correctness
+            System.out.println("Page Title is: " + pageTitle);
+            Assert.assertEquals(pageTitle, "ERNX - Parents"); // Assertion for page title validation
 
+            WebElement emailField = wait.until(ExpectedConditions.elementToBeClickable(By.name("email")));
+            Assert.assertTrue(emailField.isDisplayed()); // Verify email field is displayed for UI validation
+            wrapper.enterText(emailField, "nsmdina@gmail.com");
+            Thread.sleep(4000);
+            System.out.println("Email entered successfully.");
 
-        WebElement nextButton = wait
-                .until(ExpectedConditions.refreshed(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Next']"))));
-        wrapper.clickOnElement(nextButton); // Interaction: clicking Next button
-        log.info("Clicked Next button.");
-        Thread.sleep(10000);
+            WebElement nextButton = wait
+                    .until(ExpectedConditions.refreshed(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Next']"))));
+            // I used refreshed here to enssure the element is interactable after any potential page updates
+                    wrapper.clickOnElement(nextButton); 
+            Thread.sleep(4000);
+            System.out.println("Clicked Next button.");
 
-        // Here manually enter the OTP within the given time frame for the test to
-        // proceed beacause will give public access in github
+            // Manually enter the OTP here for the test to proceed
+            WebElement loginButton = wait.until(
+                    ExpectedConditions.refreshed(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Sign In']"))));
+            // Using refreshed to ensure the button is interactable after OTP entry
+                    Thread.sleep(4000);
+            wrapper.clickOnElement(loginButton);
+            Thread.sleep(4000);
+            System.out.println("Clicked Log In button.");
 
-        WebElement loginButton = wait.until(
-                ExpectedConditions.refreshed(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Sign In']"))));
-        Thread.sleep(10000);
-        wrapper.clickOnElement(loginButton); // Interaction: clicking Verify button
-        log.info("Clicked Log In button.");
-
-        log.info("Test case end : TestCase01");
+            System.out.println("Test case end: TestCase01");
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-     @Test(priority = 3, dependsOnMethods = "uiValidation")
+    @Test(priority = 3, dependsOnMethods = "uiValidation")
     public void formValidation() throws InterruptedException {
         try {
-        log.info("Test case start : TestCase02");
-
-        boolean isAddFirstChildVisible = !driver.findElements(By.xpath("//h1[normalize-space(.)='Add first Child']")).isEmpty();
-        if (!isAddFirstChildVisible) {
-            WebElement addAnotherChildButton = wait
-                    .until(ExpectedConditions
-                            .presenceOfElementLocated(By.xpath("//h1[normalize-space(.)='Add another Child']")));
-             // Interaction: clicking Add another Child button
-            Actions actions = new Actions(driver);
-            actions.moveToElement(addAnotherChildButton).perform();
-            wrapper.clickOnElement(addAnotherChildButton);
-            log.info("Clicked 'Add another Child' button");
-            Thread.sleep(5000);
-        } else {
-            WebElement addFirstChildButton = wait
-                    .until(ExpectedConditions
-                            .elementToBeClickable(By.xpath("//h1[normalize-space(.)='Add first Child']")));
-            wrapper.clickOnElement(addFirstChildButton); // Interaction: clicking Add first Child button
-            log.info("Clicked 'Add first Child' button");
-            Thread.sleep(2000);
-        }
-
-        WebElement nickNameField = wait
-                .until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@placeholder='Nickname']")));
-        wrapper.enterText(nickNameField, "Dina"); // Interaction: filling out Nickname field
-        log.info("Entered nickname: Dina");
-        Thread.sleep(2000);
-        WebElement genderSelection = wait
-                .until(ExpectedConditions.elementToBeClickable(By.xpath("//span[normalize-space(text())='male']")));
-        wrapper.clickOnElement(genderSelection); // Interaction: selecting Gender
-        String genderSelected = genderSelection.getText();
-        log.info("Selected gender: " + genderSelected);
-        Thread.sleep(5000);
-        WebElement nextButton = wait
-                .until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Next']")));
-        wrapper.clickOnElement(nextButton); // Interaction: clicking Next button
-        log.info("Clicked Next button after gender selection");
-        Thread.sleep(2000);
-
-        List<WebElement> gendersAvatars = wait.until(ExpectedConditions
-                .presenceOfAllElementsLocatedBy(By.xpath("//img[contains(@class, 'h-[60px] w-[60px]')]")));
-        if (genderSelected.equalsIgnoreCase("male")) {
-            wrapper.clickOnElement(gendersAvatars.get(1)); // Selecting second avatar for male
-        } else {
-            wrapper.clickOnElement(gendersAvatars.get(0)); // Selecting first avatar for female
-        }
-        log.info("Selected avatar based on gender: " + genderSelected);
-        // there is no difference in the avatars locators based on gender
-        Thread.sleep(2000);
-
-        wrapper.clickOnElement(nextButton); // Interaction: clicking Next button
-        log.info("Clicked Next button to move to rewards page");
-        WebElement reward = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//div[@class=' w-full gap-4 overflow-x-auto flex  flex-col h-full']\r\n" + //
-                        "")));
-        wrapper.clickOnElement(reward); // Interaction: selecting a reward
-        log.info("Selected a reward");
-
-        wrapper.clickOnElement(nextButton); // Interaction: clicking Next button
-        log.info("Clicked Next button to move to theme selection");
-        String desiredColor = "green";
-
-        List<WebElement> colorOptions = wait.until(ExpectedConditions
-                .presenceOfAllElementsLocatedBy(By.xpath("//div[contains(@id, 'theme')]")));
-        for (WebElement colorOption : colorOptions) {
-            String color = colorOption.getAttribute("id").toLowerCase();
-            if (color.contains(desiredColor)) {
-                wrapper.clickOnElement(colorOption); // Interaction: selecting the desired color
-                log.info("Selected theme color: " + desiredColor);
-                break;
+            System.out.println("Test case start: TestCase02");
+            // if first child is visible, click it; else click add another child
+            boolean isAddFirstChildVisible = !driver.findElements(By.xpath("//h1[normalize-space(.)='Add first Child']")).isEmpty(); // Check if "Add first Child" button is present it returns first matching element or empty list
+            if (!isAddFirstChildVisible) { // Check for "Add another Child" button
+                WebElement addAnotherChildButton = wait
+                        .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h1[normalize-space(.)='Add another Child']")));
+                Actions actions = new Actions(driver);
+                actions.moveToElement(addAnotherChildButton).perform();
+                wrapper.clickOnElement(addAnotherChildButton);
+                Thread.sleep(4000);
+                System.out.println("Clicked 'Add another Child' button");
+            } else if(isAddFirstChildVisible) {  // Check for "Add first Child" button
+                Thread.sleep(4000);
+                WebElement addFirstChildButton = wait
+                        .until(ExpectedConditions.elementToBeClickable(By.xpath("//h1[normalize-space(.)='Add first Child']")));
+                wrapper.clickOnElement(addFirstChildButton);
+                Thread.sleep(4000);
+                System.out.println("Clicked 'Add first Child' button");
             }
-        }
+            
+            WebElement nickNameField = wait
+                    .until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@placeholder='Nickname']")));
+            wrapper.enterText(nickNameField, "Dina");
+            Thread.sleep(4000);
+            System.out.println("Entered nickname: Dina");
+            
+            WebElement genderSelection = wait
+                    .until(ExpectedConditions.elementToBeClickable(By.xpath("//span[normalize-space(text())='male']")));
+            wrapper.clickOnElement(genderSelection);
+            Thread.sleep(4000);
+            String genderSelected = genderSelection.getText(); // Capture selected
+            System.out.println("Selected gender: " + genderSelected);
+            Thread.sleep(4000);
 
-        WebElement finishButton = wait
-                .until(ExpectedConditions.refreshed(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Finish']"))));
-        wrapper.clickOnElement(finishButton); // Interaction: clicking Finish button
-        log.info("Clicked Finish button to complete form");
-        Thread.sleep(5000);
+            WebElement nextButton = wait
+                    .until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Next']")));
+            wrapper.clickOnElement(nextButton);
+            Thread.sleep(4000);
+            System.out.println("Clicked Next button after gender selection");
+            // no DOM differences to find gender-specific avatars, so using index to select
+            List<WebElement> gendersAvatars = wait.until(ExpectedConditions
+                    .presenceOfAllElementsLocatedBy(By.xpath("//img[contains(@class, 'h-[60px] w-[60px]')]")));
+            if (genderSelected.equalsIgnoreCase("male")) { // if gender is male
+                wrapper.clickOnElement(gendersAvatars.get(1)); 
+            } else { // if gender is female
+                wrapper.clickOnElement(gendersAvatars.get(0));
+            }
+            Thread.sleep(4000);
+            System.out.println("Selected avatar based on gender: " + genderSelected);
 
-        log.info("Test case end : TestCase02");
+             WebElement nextButton1 = wait
+                    .until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Next']")));
+           
+            wrapper.clickOnElement(nextButton1);
+            Thread.sleep(4000);
+            System.out.println("Clicked Next button to move to rewards page");
+            // Selecting first reward as no specific criteria provided
+            WebElement reward = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//div[@class=' w-full gap-4 overflow-x-auto flex  flex-col h-full']")));
+            wrapper.clickOnElement(reward);
+            Thread.sleep(4000);
+            System.out.println("Selected a reward");
+
+             WebElement nextButton2 = wait
+                    .until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Next']")));
+           
+            wrapper.clickOnElement(nextButton2);
+            Thread.sleep(4000);
+            System.out.println("Clicked Next button to move to theme selection");
+            // Selecting theme color
+            String desiredColor = "green"; // Desired theme color
+            List<WebElement> colorOptions = wait.until(ExpectedConditions
+                    .presenceOfAllElementsLocatedBy(By.xpath("//div[contains(@id, 'theme')]"))); // Locate theme color options
+            for (WebElement colorOption : colorOptions) { // Iterate through options
+                String color = colorOption.getAttribute("id").toLowerCase(); // Get id attribute
+                if (color.contains(desiredColor)) { // Check if it matches desired color
+                    wrapper.clickOnElement(colorOption);
+                    Thread.sleep(4000);
+                    System.out.println("Selected theme color: " + desiredColor);
+                    break;
+                }
+            }
+
+            WebElement finishButton = wait
+                    .until(ExpectedConditions.refreshed(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Finish']"))));
+            wrapper.clickOnElement(finishButton);
+            Thread.sleep(4000);
+            System.out.println("Clicked Finish button to complete form");
+
+            System.out.println("Test case end: TestCase02");
 
         } catch (Exception e) {
-            log.log(Level.SEVERE, "Error in formValidation test case", e);
+            System.out.println("Error in formValidation test case");
+            e.printStackTrace();
         }
     }
 
     @Test(priority = 1)
     public void verifyInvalidOTPValidation() throws InterruptedException {
         try {
-        log.info("Test case start : TestCase03");
-        driver.get("https://ernx-consumer.vercel.app/login"); // Navigates to the website.
-        Thread.sleep(5000);
+            System.out.println("Test case start: TestCase03");
+            driver.get("https://ernx-consumer.vercel.app/login");
+            Thread.sleep(4000);
+            
+            WebElement emailField = wait.until(ExpectedConditions.elementToBeClickable(By.name("email")));
+            Assert.assertTrue(emailField.isDisplayed());
+            wrapper.enterText(emailField, "example@gmail.com");
+            Thread.sleep(4000);
+            System.out.println("Email entered successfully.");
 
-        WebElement emailField = wait.until(ExpectedConditions.elementToBeClickable(By.name("email")));
-        Assert.assertTrue(emailField.isDisplayed()); // Basic UI validation: element presence
-        wrapper.enterText(emailField, "example@gmail.com"); // Interaction: filling out email field
-        log.info("Email entered successfully.");
-        WebElement nextButton = wait
-                .until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Next']")));
-        wrapper.clickOnElement(nextButton); // Interaction: clicking Next button
-        log.info("Clicked Next button.");
-        Thread.sleep(5000);
+            WebElement nextButton = wait
+                    .until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space(text())='Next']")));
+            wrapper.clickOnElement(nextButton);
+            Thread.sleep(4000);
+            System.out.println("Clicked Next button.");
 
-        WebElement otpField1 = wait.until(ExpectedConditions.elementToBeClickable(By.id("otp-0")));
-        wrapper.enterText(otpField1, "1");
-        WebElement otpField2 = wait.until(ExpectedConditions.elementToBeClickable(By.id("otp-1")));
-        wrapper.enterText(otpField2, "2");
-        WebElement otpField3 = wait.until(ExpectedConditions.elementToBeClickable(By.id("otp-2")));
-        wrapper.enterText(otpField3, "3");
-        WebElement otpField4 = wait.until(ExpectedConditions.elementToBeClickable(By.id("otp-3")));
-        wrapper.enterText(otpField4, "4");
-        log.info("Entered OTP: 1234");
-        String expectedErrorMessage = "OTP is Invalid";
+            WebElement otpField1 = wait.until(ExpectedConditions.elementToBeClickable(By.id("otp-0")));
+            wrapper.enterText(otpField1, "1");
+            WebElement otpField2 = wait.until(ExpectedConditions.elementToBeClickable(By.id("otp-1")));
+            wrapper.enterText(otpField2, "2");
+            WebElement otpField3 = wait.until(ExpectedConditions.elementToBeClickable(By.id("otp-2")));
+            wrapper.enterText(otpField3, "3");
+            WebElement otpField4 = wait.until(ExpectedConditions.elementToBeClickable(By.id("otp-3")));
+            wrapper.enterText(otpField4, "4");
+            Thread.sleep(4000);
+            System.out.println("Entered OTP: 1234");
 
-        WebElement errorMessage = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(text(), 'OTP is Invalid')]")));
-        String actualErrorMessage = errorMessage.getText();
-        Assert.assertEquals(actualErrorMessage, expectedErrorMessage, "Error message does not match.");
-        log.info("Verified error message: " + actualErrorMessage);
+            String expectedErrorMessage = "OTP is Invalid"; // Expected error message
+            WebElement errorMessage = wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(text(), 'OTP is Invalid')]")));
+            String actualErrorMessage = errorMessage.getText();
+            Assert.assertEquals(actualErrorMessage, expectedErrorMessage, "Error message does not match."); // Assertion for validation
+            System.out.println("Verified error message: " + actualErrorMessage);
 
-        log.info("Test case end : TestCase03");
+            System.out.println("Test case end: TestCase03");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -199,32 +214,17 @@ public class TestCases {
 
     @BeforeTest
     public void startBrowser() {
-        System.setProperty("java.util.logging.config.file", "logging.properties");
-
-        // NOT NEEDED FOR SELENIUM MANAGER
-        // WebDriverManager.chromedriver().timeout(30).setup();
-
-        ChromeOptions options = new ChromeOptions();
-        LoggingPreferences logs = new LoggingPreferences();
-
-        logs.enable(LogType.BROWSER, Level.ALL);
-        logs.enable(LogType.DRIVER, Level.ALL);
-        options.setCapability("goog:loggingPrefs", logs);
-        options.addArguments("--remote-allow-origins=*");
-
-        System.setProperty(ChromeDriverService.CHROME_DRIVER_LOG_PROPERTY, "build/chromedriver.log");
+        ChromeOptions options = new ChromeOptions(); 
 
         driver = new ChromeDriver(options);
         wrapper = new Wrappers(driver);
         driver.manage().window().maximize();
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
     }
 
     @AfterTest
     public void endTest() {
         driver.close();
         driver.quit();
-
     }
 }
